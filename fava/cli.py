@@ -10,13 +10,12 @@ from cheroot import wsgi
 from fava.application import app
 from fava.util import simple_wsgi
 from fava import __version__
+from fava.ext.s3_backend import FileOrS3URI
 
 
 # pylint: disable=too-many-arguments
 @click.command()
-@click.argument(
-    'filenames',
-    nargs=-1, type=click.Path(exists=True, dir_okay=False, resolve_path=True))
+@click.argument('filenames', nargs=-1, type=FileOrS3URI())
 @click.option('-p', '--port', type=int, default=5000, metavar='<port>',
               help='The port to listen on. (default: 5000)')
 @click.option('-H', '--host', type=str, default='localhost', metavar='<host>',
@@ -50,6 +49,7 @@ def main(filenames, port, host, prefix, incognito, debug, profile,
     if not filenames:
         raise click.UsageError('No file specified')
 
+    # TODO: do we actually support multiple filenames, when cli has nargs=-1?
     app.config['BEANCOUNT_FILES'] = filenames
     app.config['INCOGNITO'] = incognito
 

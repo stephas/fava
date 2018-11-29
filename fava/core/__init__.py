@@ -32,6 +32,7 @@ from fava.core.query_shell import QueryShell
 from fava.core.tree import Tree
 from fava.core.watcher import Watcher
 from fava.ext import find_extensions
+from fava.ext.s3_backend import S3FileBackend
 
 
 MAXDATE = datetime.date.max
@@ -109,8 +110,13 @@ class FavaLedger():
         'root_account', 'root_tree', '_watcher'] + MODULES
 
     def __init__(self, path):
+        s3_file_backend = S3FileBackend(self, path)
+
         #: The path to the main Beancount file.
         self.beancount_file_path = path
+        if s3_file_backend.active:
+            self.beancount_file_path = s3_file_backend.beancount_file_path
+
         self._is_encrypted = is_encrypted_file(path)
         self._filters = {}
 
@@ -128,6 +134,8 @@ class FavaLedger():
 
         #: A :class:`.FileModule` instance.
         self.file = FileModule(self)
+        if s3_file_backend.active:
+            self.file = s3_file_backend
 
         #: A :class:`.IngestModule` instance.
         self.ingest = IngestModule(self)
@@ -175,7 +183,8 @@ class FavaLedger():
                 loader._load([(self.beancount_file_path, True)],
                              None, None, None)
             self.account_types = get_account_types(self.options)
-            self._watcher.update(*self.paths_to_watch())
+            # TODO: implement watcher for S3
+            #self._watcher.update(*self.paths_to_watch())
         else:
             self.all_entries, self.errors, self.options = \
                 loader.load_file(self.beancount_file_path)

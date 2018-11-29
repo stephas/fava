@@ -92,6 +92,7 @@ def _load_file():
         if not slug:
             slug = slugify(filepath)
         app.config['LEDGERS'][slug] = ledger
+    # actually contains ledger instances, wtf is slug?
     app.config['FILE_SLUGS'] = list(app.config['LEDGERS'].keys())
 
 

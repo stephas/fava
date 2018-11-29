@@ -117,6 +117,7 @@ def payee_transaction():
 @json_response
 def add_document():
     """Upload a document."""
+    # TODO: implement add document for S3
     if not g.ledger.options['documents']:
         raise FavaAPIException('You need to set a documents folder.')
 
